@@ -1,0 +1,41 @@
+name: Validate H-Global preview
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "feat/**"]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check required preview files
+        run: |
+          test -s public/index.html
+          test -s public/theme.css
+          grep -q 'noindex,nofollow' public/index.html
+          grep -q 'prefers-reduced-motion' public/theme.css
+      - name: Check inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class ScriptParser(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.inside=False; self.parts=[]
+              def handle_starttag(self, tag, attrs):
+                  if tag == "script": self.inside=True
+              def handle_endtag(self, tag):
+                  if tag == "script": self.inside=False
+              def handle_data(self, data):
+                  if self.inside: self.parts.append(data)
+          p=ScriptParser()
+          p.feed(Path("public/index.html").read_text(encoding="utf-8"))
+          Path("/tmp/hglobal-inline.js").write_text("\n".join(p.parts),encoding="utf-8")
+          PY
+          node --check /tmp/hglobal-inline.js
