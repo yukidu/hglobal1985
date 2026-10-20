@@ -17,7 +17,7 @@
   <aside class="sidebar" id="sidebar" aria-label="主選單">
     <div class="sidebar-head"><strong>網站主選單</strong><button id="closeMenu" class="icon-btn" aria-label="關閉主選單">×</button></div>
     <nav id="primaryNav" class="primary-nav">
-      <button data-major="首頁" class="nav-item"><span>⌂</span>首頁</button>
+      
       <button data-major="最新消息" class="nav-item"><span>▤</span>最新消息</button>
       <button data-major="活動報名" class="nav-item"><span>▣</span>活動報名</button>
       <button data-major="寰宇大學" class="nav-item"><span>✧</span>寰宇大學</button>
@@ -60,41 +60,46 @@
 <button class="mini-logo" id="expandToolbar" aria-label="展開快捷工具列" hidden><span class="brand-mark">H</span></button>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const pages = [
- {major:"首頁",sub:"首頁內容",title:"首頁",text:"首頁是一個獨立頁面，可由授權管理員自訂內容；不需要在第二層選單額外放置「首頁」按鈕。",subitems:[]},
- {major:"最新消息",sub:"總部消息",title:"總部消息",text:"集中呈現總部公告、重要通知與最新資訊。",subitems:["總部消息","安麗大會","寰宇會議","產品特惠","各中心會場"]},
- {major:"活動報名",sub:"我的活動",title:"我的活動",text:"查看已報名活動；每個活動共用「查詢、活動資訊、報名」三項功能。",subitems:["我的活動","商業餐會","海外旅遊特攻營","全球菁英會","翡翠達標班","生涯規劃營","美力之星","2027香港跟隨"]},
- {major:"寰宇大學",sub:"大會回顧與音檔下載",title:"大會回顧與音檔下載",text:"整合培訓資源、歷屆大會回顧與符合授權範圍的音檔入口。",subitems:["大會回顧與音檔下載","U40潛能培訓","第一屆海外旅遊特攻營","第二屆海外旅遊特攻營"]},
- {major:"活動花絮",sub:"歷屆活動相簿",title:"歷屆活動相簿",text:"以相簿方式整理活動照片；影片上傳不在本次確認範圍。",subitems:["歷屆活動相簿"]},
- {major:"場地租借",sub:"台北寰宇商務空間",title:"台北寰宇商務空間",text:"場地資料、租借時段、預訂與設備管理將使用 H-Global 專屬資料模組。",subitems:["台北寰宇商務空間","三重PGC匹克球場"]},
- {major:"關於寰宇",sub:"領導人",title:"關於寰宇",text:"介紹寰宇全球與領導團隊。",subitems:["領導人"]}
+const sections = [
+ {major:"首頁",subitems:[{sub:"首頁內容",title:"首頁",text:"首頁是一個獨立頁面，可由授權管理員自訂內容；不需要在第二層選單額外放置「首頁」按鈕。"}]},
+ {major:"最新消息",subitems:[{sub:"總部消息",title:"總部消息",text:"集中呈現總部公告、重要通知與最新資訊。"},{sub:"安麗大會"},{sub:"寰宇會議"},{sub:"產品特惠"},{sub:"各中心會場"}]},
+ {major:"活動報名",subitems:[{sub:"我的活動",title:"我的活動",text:"查看已報名活動；每個活動共用「查詢、活動資訊、報名」三項功能。"},{sub:"商業餐會"},{sub:"海外旅遊特攻營"},{sub:"全球菁英會"},{sub:"翡翠達標班"},{sub:"生涯規劃營"},{sub:"美力之星"},{sub:"2027香港跟隨"}]},
+ {major:"寰宇大學",subitems:[{sub:"大會回顧與音檔下載"},{sub:"U40潛能培訓"},{sub:"第一屆海外旅遊特攻營"},{sub:"第二屆海外旅遊特攻營"}]},
+ {major:"活動花絮",subitems:[{sub:"歷屆活動相簿",text:"以相簿方式整理活動照片；影片上傳不在本次確認範圍。"}]},
+ {major:"場地租借",subitems:[{sub:"台北寰宇商務空間",text:"場地資料、租借時段、預訂與設備管理將使用 H-Global 專屬資料模組。"},{sub:"三重PGC匹克球場"}]},
+ {major:"關於寰宇",subitems:[{sub:"領導人"}]}
 ];
-let current=0, expanded=true, toolbarExpanded=true, subscribed=new Set();
+const pages=sections.flatMap(s=>s.subitems.map(x=>({major:s.major,sub:x.sub,title:x.title||x.sub,text:x.text||"此頁為架構示意；正式內容與資料欄位依 V10 交接規格分批建置。"})));
+let current=0,expanded=true,toolbarExpanded=true,subscribed=new Set();
 const $=id=>document.getElementById(id);
 function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2300)}
 function render(){
- const p=pages[current];$('pageTitle').textContent=p.major==='首頁'?'寰宇全球':p.major;$('pageDescription').textContent=p.major==='首頁'?'凝聚夥伴、共享資源，讓每一份努力都能持續累積。':p.text;
+ const p=pages[current],section=sections.find(s=>s.major===p.major);
+ $('pageTitle').textContent=p.major==='首頁'?'寰宇全球':p.major;
+ $('pageDescription').textContent=p.major==='首頁'?'凝聚夥伴、共享資源，讓每一份努力都能持續累積。':p.text;
  $('sectionTitle').textContent=p.major;$('contentTitle').textContent=p.title;$('contentText').textContent=p.text;
  document.querySelectorAll('[data-major]').forEach(b=>b.classList.toggle('active',b.dataset.major===p.major));
- $('subnav').innerHTML=p.subitems.map((x,i)=>'<button class="subnav-btn '+(x===p.sub?'active':'')+'" data-sub="'+i+'">'+x+'</button>').join('');
+ const wrap=document.querySelector('.subnav-wrap');wrap.hidden=p.major==='首頁';
+ $('subnav').innerHTML=section.subitems.map(x=>'<button class="subnav-btn '+(x.sub===p.sub?'active':'')+'" data-sub="'+x.sub.replaceAll('"','&quot;')+'">'+x.sub+'</button>').join('');
  $('subnav').hidden=!expanded;$('expandMenu').textContent=expanded?'收合選單 −':'展開選單 +';$('expandMenu').setAttribute('aria-expanded',String(expanded));
  $('prevPage').disabled=current===0;$('nextPage').disabled=current===pages.length-1;
  const blocked=['我的活動','我的通知','我的訂閱','會員控制台'].includes(p.sub)||p.major==='首頁';
  $('subscribePage').disabled=blocked;$('subscribePage').classList.toggle('is-subscribed',subscribed.has(p.major+'|'+p.sub));
  $('subscribeIcon').textContent=subscribed.has(p.major+'|'+p.sub)?'✓':'♧';$('subscribeLabel').textContent=subscribed.has(p.major+'|'+p.sub)?'已訂閱':'訂閱';
 }
-function selectMajor(name){const idx=pages.findIndex(p=>p.major===name);if(idx>=0){current=idx;expanded=true;render();closeDrawer()}}
 function closeDrawer(){$('sidebar').classList.remove('open');$('scrim').classList.remove('show');$('menuToggle').setAttribute('aria-expanded','false')}
+function goTo(i){if(i<0||i>=pages.length){toast(i<0?'已是第一個頁面':'已是最後一個頁面');return}current=i;expanded=true;render();window.scrollTo({top:0,behavior:'smooth'})}
+function selectMajor(name){const idx=pages.findIndex(p=>p.major===name);if(idx>=0){goTo(idx);closeDrawer()}}
 $('primaryNav').addEventListener('click',e=>{const b=e.target.closest('[data-major]');if(b)selectMajor(b.dataset.major)});
-$('subnav').addEventListener('click',e=>{const b=e.target.closest('[data-sub]');if(b){const p=pages[current];p.sub=p.subitems[Number(b.dataset.sub)];p.title=p.sub;$('contentTitle').textContent=p.sub;$('contentText').textContent='此頁為架構示意；正式內容與資料欄位依 V10 交接規格分批建置。';render()}});
+$('subnav').addEventListener('click',e=>{const b=e.target.closest('[data-sub]');if(b){const idx=pages.findIndex(p=>p.major===pages[current].major&&p.sub===b.dataset.sub);if(idx>=0)goTo(idx)}});
+document.querySelector('.brand').addEventListener('click',e=>{e.preventDefault();goTo(0);closeDrawer()});
 $('menuToggle').onclick=()=>{$('sidebar').classList.add('open');$('scrim').classList.add('show');$('menuToggle').setAttribute('aria-expanded','true')};
 $('closeMenu').onclick=closeDrawer;$('scrim').onclick=closeDrawer;
 $('expandMenu').onclick=()=>{expanded=!expanded;render()};
-$('prevPage').onclick=()=>{if(current>0){current--;expanded=true;render()}};
-$('nextPage').onclick=()=>{if(current<pages.length-1){current++;expanded=true;render()}};
+$('prevPage').onclick=()=>goTo(current-1);$('nextPage').onclick=()=>goTo(current+1);
 $('topPage').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 $('sharePage').onclick=async()=>{const data={title:$('contentTitle').textContent,text:'寰宇全球 H-Global｜'+$('contentTitle').textContent,url:location.href};try{if(navigator.share)await navigator.share(data);else if(navigator.clipboard){await navigator.clipboard.writeText(data.url);toast('此裝置不支援原生分享，已複製網址')}}catch(e){if(e.name!=='AbortError')toast('分享功能目前無法使用')}};
-$('subscribePage').onclick=()=>{const key=pages[current].major+'|'+pages[current].sub;if(['我的活動','我的通知','我的訂閱','會員控制台'].includes(pages[current].sub)||pages[current].major==='首頁')return;subscribed.has(key)?subscribed.delete(key):subscribed.add(key);render();toast(subscribed.has(key)?'已加入本機示意訂閱':'已取消本機示意訂閱')};
+$('subscribePage').onclick=()=>{const p=pages[current],key=p.major+'|'+p.sub;if(['我的活動','我的通知','我的訂閱','會員控制台'].includes(p.sub)||p.major==='首頁')return;subscribed.has(key)?subscribed.delete(key):subscribed.add(key);render();toast(subscribed.has(key)?'已加入本機示意訂閱':'已取消本機示意訂閱')};
 $('subscriptionShortcut').onclick=()=>toast('訂閱清單 UI 將於會員功能批次接入');
 $('viewSubscriptions').onclick=()=>toast('訂閱清單目前為前端示意');
 $('editPage').onclick=()=>toast('本批次先驗收架構；CMS 將於後續 PR 建置');
