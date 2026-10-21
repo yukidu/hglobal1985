@@ -105,14 +105,17 @@ export async function currentMember(request,env,options={}) {
   if(!member || member.status!=='active') throw new AuthError('member_not_enabled',403);
   return {id:member.id,display_name:member.display_name,rank_label:member.rank_label,avatar_url:member.avatar_url};
 }
-export async function hasRole(env,memberId,roles) {
-  if(!Array.isArray(roles) || roles.length===0) return false;
+export async function rolesFor(env,memberId) {
   try {
     const result=await env.HGLOBAL_DB.prepare(
       "SELECT role_code FROM member_roles WHERE member_id = ?"
     ).bind(memberId).all();
-    return (result.results||[]).some(r=>roles.includes(r.role_code));
+    return (result.results||[]).map(r=>r.role_code).filter(x=>typeof x==='string');
   } catch { throw new AuthError('database_unavailable',503); }
+}
+export async function hasRole(env,memberId,roles) {
+  if(!Array.isArray(roles) || roles.length===0) return false;
+  return (await rolesFor(env,memberId)).some(role=>roles.includes(role));
 }
 export function errorResponse(error) {
   if(error instanceof AuthError) return json({error:error.code},error.status);
