@@ -16,24 +16,35 @@ async function jwt(){
 }
 const env={STARRY_ID_ISSUER:'https://id.starry.phd',STARRY_ID_AUDIENCE:'hglobal1985',
  STARRY_ID_JWKS_URL:'https://id.starry.phd/.well-known/jwks.json'};
-function db({guard=true,slot=true,conflict=false}={}){
+function db({guard=true,slot=true,conflict=false}={}) {
  const state={writes:[]};
- return {state,prepare(sql) {
-  return {
-    bind(...args) {return {
-      first:async()=>{
-        if(sql.includes('FROM members'))return {id:'local-m1',display_name:'原會員姓名',status:'active'};
-        if(sql.includes('schema_migrations'))return guard?{version:'0003_venue_booking_overlap_guard'}:null;
-        if(sql.includes('venue_slots s'))return slot?{
-          id:'s1',venue_id:'v1',starts_at:'2099-10-21T12:00:00',ends_at:'2099-10-21T13:00:00',
-          price_amount:500,currency:'TWD',timezone:'Asia/Taipei'}:null;
-        return null;
+ return {
+  state,
+  prepare(sql) {
+   return {
+    bind(...args) {
+     return {
+      first: async () => {
+       if(sql.includes('FROM members')) return {id:'local-m1',display_name:'原會員姓名',status:'active'};
+       if(sql.includes('schema_migrations')) return guard?{version:'0003_venue_booking_overlap_guard'}:null;
+       if(sql.includes('venue_slots s')) return slot?{
+        id:'s1',venue_id:'v1',starts_at:'2099-10-21T12:00:00',ends_at:'2099-10-21T13:00:00',
+        price_amount:500,currency:'TWD',timezone:'Asia/Taipei'
+       }:null;
+       return null;
       },
-      all:async()=>({results:[]}),
-      run:async()=>{state.writes.push({sql,args});if(conflict)throw Error('venue_time_conflict');return {success:true}}
-    }};
-  };
- }};
+      all: async () => ({results:[]}),
+      run: async () => {
+       state.writes.push({sql,args});
+       if(conflict) throw Error('venue_time_conflict');
+       return {success:true};
+      }
+     };
+    },
+    first: async () => guard?{version:'0003_venue_booking_overlap_guard'}:null
+   };
+  }
+ };
 }
 async function call(database,body) {
  const request=new Request('https://preview.test/api/v1/venue-bookings',{
