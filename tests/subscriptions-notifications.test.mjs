@@ -7,20 +7,6 @@ import {MARK_READ_SQL,onRequestPatch} from '../functions/api/v1/notifications/[i
 import {onRequestGet as inbox} from '../functions/api/v1/notifications.js';
 
 const schema=await readFile(new URL('../migrations/0001_initial_schema.sql',import.meta.url),'utf8');
-const python=`
-import json,sqlite3,sys
-data=json.load(sys.stdin)
-db=sqlite3.connect(':memory:')
-db.execute('PRAGMA foreign_keys=ON')
-db.executescript(data['schema'])
-db.execute("INSERT INTO members(id,external_subject) VALUES('owner','one'),('other','two')")
-db.execute("INSERT INTO pages(id,public_id,title,menu_key,status,access_level) VALUES('pub','100','public','最新消息','published','public')")
-db.execute("INSERT INTO pages(id,public_id,title,menu_key,status,access_level) VALUES('draft','101','draft','最新消息','draft','public')")
-db.execute("INSERT INTO pages(id,public_id,title,menu_key,status,access_level) VALUES('private','102','private','最新消息','published','members')")
-db.execute("INSERT INTO pages(id,public_id,title,menu_key,status,access_level,subscribable) VALUES('nosub','103','no','最新消息','published','public',0)")
-sub,unsub,mark=data['subscribe'],data['unsubscribe'],data['mark']
-assert db.execute(sub,('owner','100')).fetchone()['enabled']==1 if False else True
-`;
 const script=`
 import json,sqlite3,sys
 data=json.load(sys.stdin)
