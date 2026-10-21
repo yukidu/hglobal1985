@@ -17,6 +17,7 @@ function cacheable(req,url){
     !url.pathname.startsWith('/api/') &&
     !url.pathname.startsWith('/auth/') &&
     !url.pathname.startsWith('/admin/') &&
+    !url.pathname.startsWith('/account/') &&
     !req.headers.has('Authorization') &&
     !req.headers.has('Cookie');
 }
