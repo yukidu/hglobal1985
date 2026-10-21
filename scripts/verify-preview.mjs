@@ -63,10 +63,12 @@ if (venueSlots.status === 200) {
 }
 // Every private API must fail closed before any member login integration is enabled.
 for (const path of ['/api/v1/members/me', '/api/v1/admin/page-drafts',
-                    '/api/v1/event-registrations', '/api/v1/venue-bookings']) {
+                    '/api/v1/admin/page-drafts/100',
+                    '/api/v1/event-registrations', '/api/v1/venue-bookings',
+                    '/api/v1/subscriptions', '/api/v1/notifications']) {
   const response = await get(path);
   if (response.status !== 401) throw Error('Private API failed anonymous access gate: ' + path + ' HTTP ' + response.status);
 }
 const invalid = await get('/api/v1/pages?limit=0');
 if (invalid.status !== 400) throw Error('Invalid pagination was not rejected');
-console.log('Preview verified:', origin, 'D1 connected, live listing JS and page/news/events/venues APIs safe, noindex set');
+console.log('Preview verified:', origin, 'D1 connected, public APIs healthy, member/CMS/event/venue/subscription/notification endpoints deny anonymous access, noindex set');
