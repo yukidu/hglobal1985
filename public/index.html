@@ -46,6 +46,7 @@
       <div class="notice"><strong>目前階段</strong><p>先驗收導覽、階層與品牌視覺。登入、會員權限、資料儲存、活動報名及場地預訂將依開發批次逐步建置。</p></div>
       <div class="content-actions"><button class="primary-btn" id="editPage" disabled title="CMS 尚未開發完成">編輯本頁內容（未開放）</button><button class="secondary-btn" id="viewSubscriptions" disabled title="會員訂閱系統尚未完成">我的訂閱清單（未開放）</button></div>
     </section>
+    <section class="content-card" id="liveListings" aria-live="polite" hidden></section>
   </main>
 </div>
 <div class="scrim" id="scrim"></div>
@@ -82,6 +83,7 @@ function render(){
  $('pageTitle').textContent=p.major==='首頁'?'寰宇全球':p.major;
  $('pageDescription').textContent=p.major==='首頁'?'凝聚夥伴、共享資源，讓每一份努力都能持續累積。':p.text;
  $('sectionTitle').textContent=p.major;$('contentTitle').textContent=p.title;$('contentText').textContent=p.text;
+ window.hglobalRefresh?.(p.major);
  document.querySelectorAll('[data-major]').forEach(b=>b.classList.toggle('active',b.dataset.major===p.major));
  const wrap=document.querySelector('.subnav-wrap');wrap.hidden=p.major==='首頁';
  $('subnav').innerHTML=section.subitems.map(x=>'<button class="subnav-btn '+(x.sub===p.sub?'active':'')+'" data-sub="'+x.sub.replaceAll('"','&quot;')+'">'+x.sub+'</button>').join('');
@@ -113,4 +115,5 @@ $('expandToolbar').onclick=()=>{toolbarExpanded=true;$('floatingToolbar').hidden
 document.querySelectorAll('[data-view]').forEach(b=>{b.disabled=true;b.title='尚未完成會員認證與權限驗證';b.setAttribute('aria-label',b.textContent.trim()+'（未開放）')});
 render();
 </script>
+<script src="/live-listings.js" defer></script>
 </body></html>
