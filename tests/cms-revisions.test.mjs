@@ -5,12 +5,12 @@ import {spawnSync} from 'node:child_process';
 import {draftPatchStatements,onRequestGet,onRequestPatch} from '../functions/api/v1/admin/page-drafts/[id].js';
 
 const schema=await readFile(new URL('../migrations/0001_initial_schema.sql',import.meta.url),'utf8');
-function entries(revision) {
+function entries(revision,suffix='') {
  return draftPatchStatements({
   id:'007',memberId:'admin1',
   input:{title:revision===1?'第二版':'第三版',menu_key:'關於寰宇',text:'<img onerror=alert(1)> & 內容'},
   expectedRevision:revision,changeNote:'版本編輯',
-  revisionId:'rev'+(revision+1),auditId:'audit'+(revision+1)
+  revisionId:'rev'+(revision+1)+suffix,auditId:'audit'+(revision+1)+suffix
  });
 }
 test('CMS draft revision updates atomically; stale editor cannot overwrite or write audit',()=>{
@@ -43,7 +43,7 @@ assert db.execute("SELECT COUNT(*) FROM audit_logs WHERE entity_id='page1'").fet
 print('pass')
 `;
  const r=spawnSync('python3',['-c',script],{
-  input:JSON.stringify({schema,first:entries(1),stale:entries(1),third:entries(2)}),
+  input:JSON.stringify({schema,first:entries(1),stale:entries(1,'-stale'),third:entries(2)}),
   encoding:'utf8'
  });
  assert.equal(r.status,0,r.stderr||r.stdout);
