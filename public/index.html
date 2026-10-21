@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#082b20">
+<title>寰宇全球 H-Global｜測試版架構預覽</title>
+<link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+<header class="topbar">
+  <button class="icon-btn menu-toggle" id="menuToggle" aria-label="開啟主選單" aria-expanded="false">☰</button>
+  <a class="brand" href="/" aria-label="返回首頁"><span class="brand-mark">H</span><span><strong>寰宇全球</strong><small>H-GLOBAL</small></span></a>
+  <div class="member-shortcuts"><button class="icon-btn" title="會員資料" aria-label="會員資料">♙</button><button class="icon-btn" title="獎銜" aria-label="獎銜">♢</button><button class="icon-btn" title="我的訂閱" aria-label="我的訂閱" id="subscriptionShortcut" disabled title="訂閱功能尚未開放">♧</button></div>
+</header>
+<div class="test-banner"><span class="status-dot"></span>架構預覽版 · 選單與分享可測試 · 會員、報名、訂閱及後台尚未開放</div>
+<div class="layout">
+  <aside class="sidebar" id="sidebar" aria-label="主選單">
+    <div class="sidebar-head"><strong>網站主選單</strong><button id="closeMenu" class="icon-btn" aria-label="關閉主選單">×</button></div>
+    <nav id="primaryNav" class="primary-nav">
+      
+      <button data-major="最新消息" class="nav-item"><span>▤</span>最新消息</button>
+      <button data-major="活動報名" class="nav-item"><span>▣</span>活動報名</button>
+      <button data-major="寰宇大學" class="nav-item"><span>✧</span>寰宇大學</button>
+      <button data-major="活動花絮" class="nav-item"><span>▧</span>活動花絮</button>
+      <button data-major="場地租借" class="nav-item"><span>⌑</span>場地租借</button>
+      <button data-major="關於寰宇" class="nav-item"><span>◎</span>關於寰宇</button>
+    </nav>
+    <div class="sidebar-foot"><button class="nav-item" data-view="console"><span>▦</span>我的控制台</button><button class="nav-item" data-view="admin"><span>⚙</span>網站管理員（測試）</button><p>本頁僅供架構與視覺驗收</p></div>
+  </aside>
+  <main class="main">
+    <section class="hero">
+      <div class="eyebrow">H-GLOBAL · BUILD WITH PURPOSE</div>
+      <h1 id="pageTitle">寰宇全球</h1>
+      <p id="pageDescription">凝聚夥伴、共享資源，讓每一份努力都能持續累積。</p>
+      <div class="hero-rule"><span></span></div>
+      <p class="hero-note">測試版架構預覽｜翡翠綠 × 香檳金視覺基準</p>
+    </section>
+    <section class="subnav-wrap" aria-label="第二層選單">
+      <div class="subnav-heading"><div><span class="section-kicker">NAVIGATION</span><h2 id="sectionTitle">首頁內容</h2></div></div>
+      <div id="subnav" class="subnav"></div>
+    </section>
+    <section class="content-card" id="contentCard">
+      <div class="content-top"><span class="section-kicker">PAGE CONTENT</span><span class="pill">預覽模式</span></div>
+      <h2 id="contentTitle">首頁</h2>
+      <p id="contentText">首頁是一個獨立頁面，可由授權管理員自訂內容；不需要在第二層選單額外放置「首頁」按鈕。</p>
+      <div class="notice"><strong>目前階段</strong><p>先驗收導覽、階層與品牌視覺。登入、會員權限、資料儲存、活動報名及場地預訂將依開發批次逐步建置。</p></div>
+      <div class="content-actions"><button class="primary-btn" id="editPage" disabled title="CMS 尚未開發完成">編輯本頁內容（未開放）</button><button class="secondary-btn" id="viewSubscriptions" disabled title="會員訂閱系統尚未完成">我的訂閱清單（未開放）</button></div>
+    </section>
+    <section class="content-card" id="liveListings" aria-live="polite" hidden></section>
+  </main>
+</div>
+<div class="scrim" id="scrim"></div>
+<div class="floating-toolbar" id="floatingToolbar" aria-label="頁面快捷工具列">
+  <button id="prevPage" aria-label="上一頁"><span>‹</span><small>上一頁</small></button>
+  <button id="sharePage" aria-label="分享"><span>↗</span><small>分享</small></button>
+  <button id="topPage" aria-label="回頂端"><span>↑</span><small>回頂端</small></button>
+  <button id="subscribePage" aria-label="訂閱尚未開放" title="需完成會員登入與資料儲存後開放" disabled><span id="subscribeIcon">♧</span><small id="subscribeLabel">未開放</small></button>
+  <button id="nextPage" aria-label="下一頁"><span>›</span><small>下一頁</small></button>
+  <button class="collapse-toolbar" id="collapseToolbar" aria-label="縮小工具列">⌄</button>
+</div>
+<button class="mini-logo" id="expandToolbar" aria-label="展開快捷工具列" hidden><span class="brand-mark">H</span></button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const sections = [
+ {major:"首頁",subitems:[{sub:"首頁內容",title:"首頁",text:"首頁是一個獨立頁面，可由授權管理員自訂內容；不需要在第二層選單額外放置「首頁」按鈕。"}]},
+ {major:"最新消息",subitems:[{sub:"總部消息",title:"總部消息",text:"集中呈現總部公告、重要通知與最新資訊。"},{sub:"安麗大會"},{sub:"寰宇會議"},{sub:"產品特惠"},{sub:"各中心會場"}]},
+ {major:"活動報名",subitems:[{sub:"我的活動",title:"我的活動",text:"查看已報名活動；每個活動共用「查詢、活動資訊、報名」三項功能。"},{sub:"商業餐會"},{sub:"海外旅遊特攻營"},{sub:"全球菁英會"},{sub:"翡翠達標班"},{sub:"生涯規劃營"},{sub:"美力之星"},{sub:"2027香港跟隨"}]},
+ {major:"寰宇大學",subitems:[{sub:"大會回顧與音檔下載"},{sub:"U40潛能培訓"},{sub:"第一屆海外旅遊特攻營"},{sub:"第二屆海外旅遊特攻營"}]},
+ {major:"活動花絮",subitems:[{sub:"歷屆活動相簿",text:"以相簿方式整理活動照片；影片上傳不在本次確認範圍。"}]},
+ {major:"場地租借",subitems:[{sub:"台北寰宇商務空間",text:"場地資料、租借時段、預訂與設備管理將使用 H-Global 專屬資料模組。"},{sub:"三重PGC匹克球場"}]},
+ {major:"關於寰宇",subitems:[{sub:"領導人"}]}
+];
+const pages=sections.flatMap(s=>s.subitems.map(x=>({major:s.major,sub:x.sub,title:x.title||x.sub,text:x.text||"此頁為架構示意；正式內容與資料欄位依 V10 交接規格分批建置。"})));
+let current=0,toolbarExpanded=true,subscribed=new Set();
+// Preview-only deep links. Production public URLs will use /{public_id}/{slug} from CMS.
+function previewUrl(i){const u=new URL(location.href);u.searchParams.set('page',String(i));return u.pathname+u.search+u.hash}
+function restorePreviewPage(){const raw=new URL(location.href).searchParams.get('page');if(raw!==null&&/^\d+$/.test(raw)){const i=Number(raw);if(Number.isSafeInteger(i)&&i>=0&&i<pages.length)current=i}}
+restorePreviewPage();
+const $=id=>document.getElementById(id);
+function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2300)}
+function render(){
+ const p=pages[current],section=sections.find(s=>s.major===p.major);
+ $('pageTitle').textContent=p.major==='首頁'?'寰宇全球':p.major;
+ $('pageDescription').textContent=p.major==='首頁'?'凝聚夥伴、共享資源，讓每一份努力都能持續累積。':p.text;
+ $('sectionTitle').textContent=p.major;$('contentTitle').textContent=p.title;$('contentText').textContent=p.text;
+ window.hglobalRefresh?.(p.major);
+ document.querySelectorAll('[data-major]').forEach(b=>b.classList.toggle('active',b.dataset.major===p.major));
+ const wrap=document.querySelector('.subnav-wrap');wrap.hidden=p.major==='首頁';
+ $('subnav').innerHTML=section.subitems.map(x=>'<button class="subnav-btn '+(x.sub===p.sub?'active':'')+'" data-sub="'+x.sub.replaceAll('"','&quot;')+'">'+x.sub+'</button>').join('');
+
+ $('prevPage').disabled=current===0;$('nextPage').disabled=current===pages.length-1;
+ const blocked=true; // Subscription requires authenticated backend; never simulate success.
+ $('subscribePage').disabled=blocked;$('subscribePage').classList.toggle('is-subscribed',subscribed.has(p.major+'|'+p.sub));
+ $('subscribeIcon').textContent=subscribed.has(p.major+'|'+p.sub)?'✓':'♧';$('subscribeLabel').textContent=subscribed.has(p.major+'|'+p.sub)?'已訂閱':'未開放';
+}
+function closeDrawer(){$('sidebar').classList.remove('open');$('scrim').classList.remove('show');$('menuToggle').setAttribute('aria-expanded','false')}
+function goTo(i,{history=true}={}){if(i<0||i>=pages.length){toast(i<0?'已是第一個頁面':'已是最後一個頁面');return}current=i;if(history)window.history.pushState({previewPage:i},'',previewUrl(i));render();window.scrollTo({top:0,behavior:'smooth'})}
+window.addEventListener('popstate',()=>{const raw=new URL(location.href).searchParams.get('page');const i=raw!==null&&/^\d+$/.test(raw)?Number(raw):0;goTo(Number.isSafeInteger(i)&&i>=0&&i<pages.length?i:0,{history:false})});
+function selectMajor(name){const idx=pages.findIndex(p=>p.major===name);if(idx>=0){goTo(idx);closeDrawer()}}
+$('primaryNav').addEventListener('click',e=>{const b=e.target.closest('[data-major]');if(b)selectMajor(b.dataset.major)});
+$('subnav').addEventListener('click',e=>{const b=e.target.closest('[data-sub]');if(b){const idx=pages.findIndex(p=>p.major===pages[current].major&&p.sub===b.dataset.sub);if(idx>=0)goTo(idx)}});
+document.querySelector('.brand').addEventListener('click',e=>{e.preventDefault();goTo(0);closeDrawer()});
+$('menuToggle').onclick=()=>{$('sidebar').classList.add('open');$('scrim').classList.add('show');$('menuToggle').setAttribute('aria-expanded','true')};
+$('closeMenu').onclick=closeDrawer;$('scrim').onclick=closeDrawer;
+
+$('prevPage').onclick=()=>goTo(current-1);$('nextPage').onclick=()=>goTo(current+1);
+$('topPage').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+$('sharePage').onclick=async()=>{const data={title:$('contentTitle').textContent,text:'寰宇全球 H-Global｜'+$('contentTitle').textContent,url:location.href};try{if(navigator.share)await navigator.share(data);else if(navigator.clipboard){await navigator.clipboard.writeText(data.url);toast('此裝置不支援原生分享，已複製網址')}}catch(e){if(e.name!=='AbortError')toast('分享功能目前無法使用')}};
+$('subscribePage').onclick=()=>toast('訂閱尚未開放，未儲存任何訂閱資料');
+$('subscriptionShortcut').onclick=()=>toast('訂閱清單 UI 將於會員功能批次接入');
+$('viewSubscriptions').onclick=()=>toast('訂閱清單目前為前端示意');
+$('editPage').onclick=()=>toast('本批次先驗收架構；CMS 將於後續 PR 建置');
+$('collapseToolbar').onclick=()=>{toolbarExpanded=false;$('floatingToolbar').hidden=true;$('expandToolbar').hidden=false};
+$('expandToolbar').onclick=()=>{toolbarExpanded=true;$('floatingToolbar').hidden=false;$('expandToolbar').hidden=true};
+document.querySelectorAll('[data-view]').forEach(b=>{b.disabled=true;b.title='尚未完成會員認證與權限驗證';b.setAttribute('aria-label',b.textContent.trim()+'（未開放）')});
+render();
+</script>
+<script src="/live-listings.js" defer></script>
+</body></html>
