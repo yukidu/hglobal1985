@@ -2,16 +2,24 @@ const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status,
   headers: {
     "content-type": "application/json; charset=utf-8",
-    "cache-control": "public, max-age=60, s-maxage=60",
+    "cache-control": status === 200 ? "public, max-age=60, s-maxage=60" : "no-store",
     "x-content-type-options": "nosniff"
   }
 });
 
+function boundedInteger(raw, fallback, min, max) {
+  if (raw === null) return fallback;
+  if (!/^[0-9]+$/.test(raw)) return null;
+  const value = Number(raw);
+  return Number.isSafeInteger(value) && value >= min && value <= max ? value : null;
+}
+
 export async function onRequestGet({ env, request }) {
   if (!env.HGLOBAL_DB) return json({ error: "preview_database_not_bound" }, 503);
   const url = new URL(request.url);
-  const limit = Math.min(50, Math.max(1, Number.parseInt(url.searchParams.get("limit") || "20", 10) || 20));
-  const offset = Math.min(10000, Math.max(0, Number.parseInt(url.searchParams.get("offset") || "0", 10) || 0));
+  const limit = boundedInteger(url.searchParams.get("limit"), 20, 1, 50);
+  const offset = boundedInteger(url.searchParams.get("offset"), 0, 0, 10000);
+  if (limit === null || offset === null) return json({ error: "invalid_pagination" }, 400);
   try {
     const result = await env.HGLOBAL_DB.prepare(
       "SELECT id, name, address_text, timezone, sort_order FROM venues WHERE status = 'active' ORDER BY sort_order ASC, name ASC LIMIT ? OFFSET ?"
