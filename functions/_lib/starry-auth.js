@@ -71,7 +71,7 @@ export async function verifyStarryToken(token,env,{fetcher=fetch,now=Date.now()}
   const keys=await keySet(cfg.jwks,fetcher);
   const jwk=keys.find(k=>k.kid===header.kid && k.kty==='RSA' &&
     (!k.alg || k.alg==='RS256') && (!k.use || k.use==='sig') &&
-    Array.isArray(k.key_ops)? k.key_ops.includes('verify') : true);
+    (!k.key_ops || (Array.isArray(k.key_ops) && k.key_ops.includes('verify'))));
   if(!jwk || jwk.kty!=='RSA' || jwk.kid!==header.kid ||
      (jwk.key_ops && !jwk.key_ops.includes('verify')) ||
      (jwk.alg && jwk.alg!=='RS256') || (jwk.use && jwk.use!=='sig')) throw new AuthError('invalid_token');
