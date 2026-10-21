@@ -43,6 +43,24 @@ for (const endpoint of ['news', 'events', 'venues']) {
   const rejected = await get('/api/v1/' + endpoint + '?limit=0');
   if (rejected.status !== 400) throw Error(endpoint + ' accepted invalid pagination');
 }
+// Phase-1 feature acceptance: newly deployed public endpoints must be present
+// and must reject malformed parameters before consulting private data.
+const invalidEvent = await get('/api/v1/event-sessions?event_id=..%2Fprivate');
+if (invalidEvent.status !== 400) throw Error('Event sessions API missing or accepted malformed event ID');
+const eventSessions = await get('/api/v1/event-sessions?event_id=preview-unknown-event-20261021');
+if (![200, 404].includes(eventSessions.status)) throw Error('Event sessions API unhealthy: HTTP ' + eventSessions.status);
+if (eventSessions.status === 200) {
+  const data = await eventSessions.json();
+  if (!Array.isArray(data.sessions)) throw Error('Event sessions API shape invalid');
+}
+const invalidVenue = await get('/api/v1/venue-availability?venue_id=venue&from=2026-02-30&to=2026-03-01');
+if (invalidVenue.status !== 400) throw Error('Venue availability API missing or accepted invalid date');
+const venueSlots = await get('/api/v1/venue-availability?venue_id=preview-unknown-venue-20261021&from=2026-10-21&to=2026-10-22');
+if (![200, 404].includes(venueSlots.status)) throw Error('Venue availability API unhealthy: HTTP ' + venueSlots.status);
+if (venueSlots.status === 200) {
+  const data = await venueSlots.json();
+  if (!Array.isArray(data.slots)) throw Error('Venue availability API shape invalid');
+}
 const invalid = await get('/api/v1/pages?limit=0');
 if (invalid.status !== 400) throw Error('Invalid pagination was not rejected');
 console.log('Preview verified:', origin, 'D1 connected, live listing JS and page/news/events/venues APIs safe, noindex set');
