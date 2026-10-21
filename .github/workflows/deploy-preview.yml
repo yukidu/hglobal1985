@@ -30,16 +30,19 @@ jobs:
           if [ -n "$CF_API_TOKEN" ] && [ -n "$CF_ACCOUNT_ID" ]; then
             echo 'available=true' >> "$GITHUB_OUTPUT"
           else
-            echo '::warning::Preview deployment skipped: configure CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in GitHub environment hglobal-preview.'
-            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo '::error::Deployment blocked: missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID in GitHub environment hglobal-preview.'
+            exit 1
           fi
       - name: Deploy to Cloudflare Pages Preview only
-        if: steps.creds.outputs.available == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy public --project-name=hglobal-preview --branch=feat/test-environment-foundation
-      - name: Note scope
+      - name: Verify deployed preview API
+        env:
+          PREVIEW_URL: https://feat-test-environment-foundation.hglobal-preview.pages.dev
         run: |
-          echo 'No production DNS, no main merge, and no D1 migration performed by this workflow.'
+          node -e 'const u=process.env.PREVIEW_URL; fetch(u+"/api/v1/health").then(async r=>{const b=await r.json();if(!r.ok||b.ok!==true||b.database!=="connected")throw Error("Preview D1 health failed: "+r.status);console.log("Preview D1 healthy")}).catch(e=>{console.error(e);process.exit(1)})'
+      - name: Note scope
+        run: echo 'No production DNS, no main merge, and no D1 migration performed by this workflow.'
