@@ -1,0 +1,33 @@
+name: Apply isolated H-Global Preview CMS publication guard
+on:
+  push:
+    branches: [feat/test-environment-foundation]
+    paths:
+      - .github/workflows/apply-preview-publication-guard.yml
+      - scripts/apply-preview-publication-guard.mjs
+      - migrations/0005_cms_publication_review.sql
+permissions:
+  contents: read
+concurrency:
+  group: hglobal-preview-d1-publication-guard
+  cancel-in-progress: false
+jobs:
+  preview-d1:
+    runs-on: ubuntu-latest
+    environment: hglobal-preview
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Exercise independent CMS approval against local SQLite
+        run: node --test tests/cms-publication-guard.test.mjs tests/cms-publication-workflow.test.mjs
+      - name: Install pinned Wrangler
+        run: npm install --no-save --no-package-lock wrangler@3.90.0
+      - name: Preflight and apply CMS review guard to H-Global Preview D1
+        run: node scripts/apply-preview-publication-guard.mjs
