@@ -1,0 +1,45 @@
+name: Deploy H-Global Preview
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/test-environment-foundation]
+permissions:
+  contents: read
+concurrency:
+  group: hglobal-preview-deploy
+  cancel-in-progress: true
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    environment: hglobal-preview
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate API and preview safety
+        run: |
+          node --test tests/*.test.mjs
+          grep -q 'noindex,nofollow' public/index.html
+      - name: Check Cloudflare credentials
+        id: creds
+        run: |
+          if [ -n "$CF_API_TOKEN" ] && [ -n "$CF_ACCOUNT_ID" ]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+          else
+            echo '::warning::Preview deployment skipped: configure CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in GitHub environment hglobal-preview.'
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy to Cloudflare Pages Preview only
+        if: steps.creds.outputs.available == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy public --project-name=hglobal-preview --branch=feat/test-environment-foundation
+      - name: Note scope
+        run: |
+          echo 'No production DNS, no main merge, and no D1 migration performed by this workflow.'
