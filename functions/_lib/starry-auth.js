@@ -1,3 +1,4 @@
+import {lookupLocalSession} from './hglobal-session.js';
 // H-Global auth boundary. Starry ID is the sole external issuer; never trust
 // browser-supplied user IDs, roles or emailed profile claims.
 export class AuthError extends Error {
@@ -95,6 +96,14 @@ export async function verifyStarryToken(token,env,{fetcher=fetch,now=Date.now()}
 }
 export async function currentMember(request,env,options={}) {
   if(!env.HGLOBAL_DB) throw new AuthError('database_unavailable',503);
+  if(!request.headers.has('Authorization')){
+    let session;
+    try {session=await lookupLocalSession(request,env.HGLOBAL_DB);}
+    catch {throw new AuthError('database_unavailable',503);}
+    if(!session)throw new AuthError('authentication_required');
+    return {id:session.id,display_name:session.display_name,
+      rank_label:session.rank_label,avatar_url:session.avatar_url};
+  }
   const identity=await verifyStarryToken(bearer(request),env,options);
   let member;
   try {
