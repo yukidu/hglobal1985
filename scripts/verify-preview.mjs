@@ -16,6 +16,11 @@ if (!page.ok) throw Error('Preview homepage HTTP ' + page.status);
 const html = await page.text();
 if (!html.includes('noindex,nofollow')) throw Error('Preview noindex requirement missing');
 if (!html.includes('架構預覽版')) throw Error('Latest preview commit not visible');
+const listingScript = await get('/live-listings.js');
+if (!listingScript.ok) throw Error('Public listing script HTTP ' + listingScript.status);
+const scriptText = await listingScript.text();
+if (!scriptText.includes('window.hglobalRefresh')) throw Error('Public listing script is not current');
+if (!html.includes('src="/live-listings.js"')) throw Error('Homepage does not load public listings');
 const health = await get('/api/v1/health');
 const status = await health.json();
 if (!health.ok || status.ok !== true || status.database !== 'connected') {
@@ -40,4 +45,4 @@ for (const endpoint of ['news', 'events', 'venues']) {
 }
 const invalid = await get('/api/v1/pages?limit=0');
 if (invalid.status !== 400) throw Error('Invalid pagination was not rejected');
-console.log('Preview verified:', origin, 'D1 connected, page/news/events/venues APIs safe, noindex set');
+console.log('Preview verified:', origin, 'D1 connected, live listing JS and page/news/events/venues APIs safe, noindex set');
