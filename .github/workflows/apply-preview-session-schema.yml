@@ -1,0 +1,31 @@
+name: Apply H-Global isolated Preview session schema
+on:
+  push:
+    branches: [feat/test-environment-foundation]
+    paths:
+      - .github/workflows/apply-preview-session-schema.yml
+      - scripts/apply-preview-session-schema.mjs
+      - migrations/0007_hglobal_sessions.sql
+permissions:
+  contents: read
+concurrency:
+  group: hglobal-preview-d1-sessions
+  cancel-in-progress: false
+jobs:
+  preview-session-schema:
+    runs-on: ubuntu-latest
+    environment: hglobal-preview
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - name: Test session security and no central DB linkage
+        run: node --test tests/hglobal-local-session.test.mjs
+      - name: Install pinned Wrangler
+        run: npm install --no-save --no-package-lock wrangler@3.90.0
+      - name: Apply isolated Preview D1 schema
+        run: node scripts/apply-preview-session-schema.mjs
