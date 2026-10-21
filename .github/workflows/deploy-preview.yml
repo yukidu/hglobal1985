@@ -1,8 +1,6 @@
 name: Deploy H-Global Preview
 on:
   workflow_dispatch:
-  push:
-    branches: [feat/test-environment-foundation]
 permissions:
   contents: read
 concurrency:
