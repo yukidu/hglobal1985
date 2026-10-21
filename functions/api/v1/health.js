@@ -13,7 +13,7 @@ export async function onRequestGet({ env }) {
   }
   try {
     const row = await env.HGLOBAL_DB
-      .prepare("SELECT version, applied_at FROM schema_migrations ORDER BY applied_at DESC LIMIT 1")
+      .prepare("SELECT version, applied_at FROM schema_migrations ORDER BY version DESC LIMIT 1")
       .first();
     return json({ ok: true, service: "hglobal-api", database: "connected", schema: row || null }, 200);
   } catch {
