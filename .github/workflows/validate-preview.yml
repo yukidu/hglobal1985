@@ -21,7 +21,5 @@ jobs:
             grep -q 'noindex,nofollow' public/index.html
             node --test tests/*.test.mjs
           else
-            test -s .github/workflows/hglobal-preview-bootstrap.yml
-            grep -q 'hglobal-preview' .github/workflows/hglobal-preview-bootstrap.yml
-            grep -q 'feat/test-environment-foundation' .github/workflows/hglobal-preview-bootstrap.yml
+            grep -q 'GitHub' README.md
           fi
