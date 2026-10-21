@@ -42,3 +42,38 @@ jobs:
 
       - name: Run preview API contract tests
         run: node --test tests/*.test.mjs
+
+  preview:
+    name: Deploy Cloudflare Preview
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/feat/test-environment-foundation'
+    runs-on: ubuntu-latest
+    environment: hglobal-preview
+    concurrency:
+      group: hglobal-preview-publish
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check deployment secrets
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF_TOKEN" ] || [ -z "$CF_ACCOUNT" ]; then
+            echo '::error::Cloudflare Preview secrets are missing in environment hglobal-preview.'
+            exit 1
+          fi
+      - name: Deploy Cloudflare Pages preview
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy public --project-name=hglobal-preview --branch=feat/test-environment-foundation
+      - name: Verify deployed Preview and public API
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: node scripts/verify-preview.mjs
