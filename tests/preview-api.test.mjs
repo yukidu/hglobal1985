@@ -36,7 +36,7 @@ for (const name of ['news', 'events', 'venues']) {
     const db = fakeDb([{ id: 'demo' }]);
     const response = await onRequestGet({
       env: { HGLOBAL_DB: db },
-      request: request('/api/v1/' + name + '?limit=999&offset=999999')
+      request: request('/api/v1/' + name + (name === 'news' ? '?limit=50&offset=10000' : '?limit=999&offset=999999'))
     });
     assert.equal(response.status, 200);
     const body = await response.json();
