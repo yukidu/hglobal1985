@@ -28,6 +28,16 @@ if (!Array.isArray(body.data)) throw Error('Pages API missing data array');
 for (const item of body.data) {
   if ('source_snapshot' in item || 'content_html' in item) throw Error('Private CMS content leaked');
 }
+const detailInvalid = await get('/api/v1/page?public_id=bad');
+if (detailInvalid.status !== 400) throw Error('Page detail accepted invalid public ID');
+for (const endpoint of ['news', 'events', 'venues']) {
+  const listing = await get('/api/v1/' + endpoint + '?limit=1&offset=0');
+  if (!listing.ok) throw Error(endpoint + ' API failed: HTTP ' + listing.status);
+  const result = await listing.json();
+  if (!Array.isArray(result.data)) throw Error(endpoint + ' API missing data array');
+  const rejected = await get('/api/v1/' + endpoint + '?limit=0');
+  if (rejected.status !== 400) throw Error(endpoint + ' accepted invalid pagination');
+}
 const invalid = await get('/api/v1/pages?limit=0');
 if (invalid.status !== 400) throw Error('Invalid pagination was not rejected');
-console.log('Preview verified:', origin, 'D1 connected, public pages API safe, noindex set');
+console.log('Preview verified:', origin, 'D1 connected, page/news/events/venues APIs safe, noindex set');
