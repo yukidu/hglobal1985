@@ -1,4 +1,5 @@
 import {currentMember,json,errorResponse,AuthError} from '../../_lib/starry-auth.js';
+import {normalizeAnswers} from '../../_lib/event-form.js';
 
 function validId(s){return typeof s==='string'&&s.length<=128&&/^[A-Za-z0-9_-]+$/.test(s)}
 async function ensureGuard(db) {
@@ -22,25 +23,32 @@ export async function onRequestPost({request,env}) {
     if(!/^application\/json(?:;|$)/i.test(request.headers.get('content-type')||''))
       return json({error:'invalid_content_type'},415);
     const declared=Number(request.headers.get('content-length')||0);
-    if(declared>4096) return json({error:'payload_too_large'},413);
+    if(declared>48000) return json({error:'payload_too_large'},413);
     const raw=await request.text();
-    if(raw.length>4096)return json({error:'payload_too_large'},413);
+    if(raw.length>48000)return json({error:'payload_too_large'},413);
     let body;
     try{body=JSON.parse(raw)}catch{return json({error:'invalid_json'},400)}
     if(!body || typeof body!=='object' || Array.isArray(body) ||
        !validId(body.event_id) || !validId(body.session_id)) return json({error:'invalid_registration'},400);
     await ensureGuard(env.HGLOBAL_DB);
-    const fields=await env.HGLOBAL_DB.prepare(
-      "SELECT COUNT(*) AS count FROM event_fields WHERE event_id=? AND required=1"
-    ).bind(body.event_id).first();
-    // Dynamic field answers must be validated against the configured form schema.
-    // Until this is implemented, never silently accept incomplete registrations.
-    if(!fields || !Number.isInteger(fields.count))throw new AuthError('database_unavailable',503);
-    if(fields.count>0)return json({error:'registration_form_not_ready'},409);
+    const fieldRows=await env.HGLOBAL_DB.prepare(
+      "SELECT id,field_key,label,field_type,required,options_json FROM event_fields WHERE event_id=? ORDER BY sort_order ASC LIMIT 65"
+    ).bind(body.event_id).all();
+    if(!fieldRows || !Array.isArray(fieldRows.results))throw new AuthError('database_unavailable',503);
+    const answers=normalizeAnswers(fieldRows.results,body.answers ?? {});
+    if(answers.error)return json({error:answers.error,field:answers.field},answers.error==='event_form_configuration_unavailable'?503:400);
     const id=crypto.randomUUID();
-    await env.HGLOBAL_DB.prepare(
+    const statement=env.HGLOBAL_DB.prepare(
       "INSERT INTO event_registrations(id,event_id,session_id,member_id,status,payment_status) VALUES (?,?,?,?,'submitted','unpaid')"
-    ).bind(id,body.event_id,body.session_id,member.id).run();
+    ).bind(id,body.event_id,body.session_id,member.id);
+    if(answers.values.length){
+      // Atomic batch: the DB capacity trigger can reject registration,
+      // rolling back both registration and all field values.
+      const values=answers.values.map(field=>env.HGLOBAL_DB.prepare(
+        "INSERT INTO event_registration_values(registration_id,field_id,value_text) VALUES (?,?,?)"
+      ).bind(id,field.id,field.value));
+      await env.HGLOBAL_DB.batch([statement,...values]);
+    } else await statement.run();
     return json({id,event_id:body.event_id,session_id:body.session_id,status:'submitted'},201);
   } catch(e){
     const message=String(e?.message||'');

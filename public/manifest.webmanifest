@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "寰宇全球 H-Global",
+  "short_name": "H-Global",
+  "lang": "zh-Hant-TW",
+  "description": "寰宇全球會員、活動、學習資源與場地資訊",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone"],
+  "background_color": "#082b20",
+  "theme_color": "#082b20",
+  "orientation": "any",
+  "icons": [
+    {"src": "/hglobal-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}
