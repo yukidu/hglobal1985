@@ -14,9 +14,9 @@
 <header class="topbar">
   <button class="icon-btn menu-toggle" id="menuToggle" aria-label="開啟主選單" aria-expanded="false">☰</button>
   <a class="brand" href="/" aria-label="返回首頁"><span class="brand-mark">H</span><span><strong>寰宇全球</strong><small>H-GLOBAL</small></span></a>
-  <div class="member-shortcuts"><button class="icon-btn" title="會員資料" aria-label="會員資料">♙</button><button class="icon-btn" title="獎銜" aria-label="獎銜">♢</button><button class="icon-btn" title="我的訂閱" aria-label="我的訂閱" id="subscriptionShortcut" disabled title="訂閱功能尚未開放">♧</button></div>
+  <div class="member-shortcuts"><button class="icon-btn" title="會員資料" aria-label="會員資料">♙</button><button class="icon-btn" title="獎銜" aria-label="獎銜">♢</button><button class="icon-btn" title="我的訂閱" aria-label="我的訂閱" id="subscriptionShortcut" title="查看我的訂閱">♧</button></div>
 </header>
-<div class="test-banner"><span class="status-dot"></span>架構預覽版 · 選單與分享可測試 · 會員、報名、訂閱及後台尚未開放</div>
+<div class="test-banner"><span class="status-dot"></span>架構預覽版 · 公開資料可查詢 · 會員登入需 Starry ID 正式接線</div>
 <div class="layout">
   <aside class="sidebar" id="sidebar" aria-label="主選單">
     <div class="sidebar-head"><strong>網站主選單</strong><button id="closeMenu" class="icon-btn" aria-label="關閉主選單">×</button></div>
@@ -29,7 +29,7 @@
       <button data-major="場地租借" class="nav-item"><span>⌑</span>場地租借</button>
       <button data-major="關於寰宇" class="nav-item"><span>◎</span>關於寰宇</button>
     </nav>
-    <div class="sidebar-foot"><button class="nav-item" data-view="console"><span>▦</span>我的控制台</button><button class="nav-item" data-view="admin"><span>⚙</span>網站管理員（測試）</button><p>本頁僅供架構與視覺驗收</p></div>
+    <div class="sidebar-foot"><button class="nav-item" data-view="console"><span>▦</span>我的控制台</button><button class="nav-item" data-view="admin"><span>⚙</span>網站管理員（測試）</button><p>本頁為測試網站；管理與會員功能請由 Starry ID 驗證登入</p></div>
   </aside>
   <main class="main">
     <section class="hero">
@@ -48,7 +48,7 @@
       <h2 id="contentTitle">首頁</h2>
       <p id="contentText">首頁是一個獨立頁面，可由授權管理員自訂內容；不需要在第二層選單額外放置「首頁」按鈕。</p>
       <div class="notice"><strong>目前階段</strong><p>先驗收導覽、階層與品牌視覺。登入、會員權限、資料儲存、活動報名及場地預訂將依開發批次逐步建置。</p></div>
-      <div class="content-actions"><button class="primary-btn" id="editPage" disabled title="CMS 尚未開發完成">編輯本頁內容（未開放）</button><button class="secondary-btn" id="viewSubscriptions" disabled title="會員訂閱系統尚未完成">我的訂閱清單（未開放）</button></div>
+      <div class="content-actions"><button class="primary-btn" id="editPage" title="前往 CMS 內容管理">前往內容管理</button><button class="secondary-btn" id="viewSubscriptions" title="查看會員訂閱清單">我的訂閱清單</button></div>
     </section>
     <section class="content-card" id="liveListings" aria-live="polite" hidden></section>
   </main>
@@ -111,12 +111,12 @@ $('prevPage').onclick=()=>goTo(current-1);$('nextPage').onclick=()=>goTo(current
 $('topPage').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 $('sharePage').onclick=async()=>{const data={title:$('contentTitle').textContent,text:'寰宇全球 H-Global｜'+$('contentTitle').textContent,url:location.href};try{if(navigator.share)await navigator.share(data);else if(navigator.clipboard){await navigator.clipboard.writeText(data.url);toast('此裝置不支援原生分享，已複製網址')}}catch(e){if(e.name!=='AbortError')toast('分享功能目前無法使用')}};
 $('subscribePage').onclick=()=>toast('訂閱尚未開放，未儲存任何訂閱資料');
-$('subscriptionShortcut').onclick=()=>toast('訂閱清單 UI 將於會員功能批次接入');
-$('viewSubscriptions').onclick=()=>toast('訂閱清單目前為前端示意');
-$('editPage').onclick=()=>toast('本批次先驗收架構；CMS 將於後續 PR 建置');
+$('subscriptionShortcut').onclick=()=>location.assign('/account/?tab=subscriptions');
+$('viewSubscriptions').onclick=()=>location.assign('/account/?tab=subscriptions');
+$('editPage').onclick=()=>location.assign('/account/?tab=admin');
 $('collapseToolbar').onclick=()=>{toolbarExpanded=false;$('floatingToolbar').hidden=true;$('expandToolbar').hidden=false};
 $('expandToolbar').onclick=()=>{toolbarExpanded=true;$('floatingToolbar').hidden=false;$('expandToolbar').hidden=true};
-document.querySelectorAll('[data-view]').forEach(b=>{b.disabled=true;b.title='尚未完成會員認證與權限驗證';b.setAttribute('aria-label',b.textContent.trim()+'（未開放）')});
+document.querySelectorAll('[data-view]').forEach(b=>{b.addEventListener('click',()=>location.assign(b.dataset.view==='admin'?'/account/?tab=admin':'/account/'))});
 render();
 </script>
 <script src="/live-listings.js" defer></script>
