@@ -34,6 +34,7 @@ jobs:
             exit 1
           fi
       - name: Deploy to Cloudflare Pages Preview only
+        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -41,8 +42,8 @@ jobs:
           command: pages deploy public --project-name=hglobal-preview --branch=feat/test-environment-foundation
       - name: Verify deployed preview API
         env:
-          PREVIEW_URL: https://feat-test-environment-foundation.hglobal-preview.pages.dev
+          PREVIEW_URL: ${{ steps.deploy.outputs.deployment-url }}
         run: |
-          node -e 'const u=process.env.PREVIEW_URL; fetch(u+"/api/v1/health").then(async r=>{const b=await r.json();if(!r.ok||b.ok!==true||b.database!=="connected")throw Error("Preview D1 health failed: "+r.status);console.log("Preview D1 healthy")}).catch(e=>{console.error(e);process.exit(1)})'
+          node scripts/verify-preview.mjs
       - name: Note scope
         run: echo 'No production DNS, no main merge, and no D1 migration performed by this workflow.'
