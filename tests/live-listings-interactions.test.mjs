@@ -5,7 +5,7 @@ const ui=await readFile(new URL('../public/live-listings.js',import.meta.url),'u
 test('live event and venue detail readers are wired into listing cards',()=>{
   assert.match(ui,/function eventDetails\(/);
   assert.match(ui,/function venueDetails\(/);
-  assert.match(ui,/\/api\/v1\/event-sessions\?event_id=/);
+  assert.match(ui,/label\.textContent = String\(session\.title/);
   assert.match(ui,/\/api\/v1\/venue-availability\?/);
   assert.match(ui,/new URLSearchParams\(/);
 });
