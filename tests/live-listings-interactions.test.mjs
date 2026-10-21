@@ -5,12 +5,12 @@ const ui=await readFile(new URL('../public/live-listings.js',import.meta.url),'u
 test('live event and venue detail readers are wired into listing cards',()=>{
   assert.match(ui,/function eventDetails\(/);
   assert.match(ui,/function venueDetails\(/);
-  assert.match(ui,/label\.textContent = String\(session\.title/);
+  assert.match(ui,/\/api\/v1\/event-sessions\?event_id=/);
   assert.match(ui,/\/api\/v1\/venue-availability\?/);
   assert.match(ui,/new URLSearchParams\(/);
 });
 test('dynamic public API responses render through textContent rather than HTML injection',()=>{
-  assert.match(ui,/title\.textContent = String\(session\.title/);
+  assert.match(ui,/label\.textContent = String\(session\.title/);
   assert.match(ui,/title\.textContent = \[slot\.starts_at/);
   assert.match(ui,/fee\.textContent/);
   assert.doesNotMatch(ui,/\.innerHTML\s*=/);
