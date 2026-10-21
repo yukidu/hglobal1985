@@ -13,7 +13,7 @@ export async function onRequestGet({request,env}){
  try{
   const venue=await env.HGLOBAL_DB.prepare("SELECT id, name, timezone FROM venues WHERE id = ? AND status = 'active' LIMIT 1").bind(venueId).first();
   if(!venue)return json({error:'venue_not_found'},404);
-  const result=await env.HGLOBAL_DB.prepare("SELECT id, starts_at, ends_at, price_amount, currency FROM venue_slots WHERE venue_id = ? AND status = 'available' AND starts_at >= ? AND starts_at < ? AND NOT EXISTS (SELECT 1 FROM venue_bookings b WHERE b.slot_id = venue_slots.id AND b.status IN ('pending','approved')) ORDER BY starts_at ASC LIMIT 250").bind(venueId,from+'T00:00:00',new Date(end+86400000).toISOString().slice(0,10)+'T00:00:00').all();
+  const result=await env.HGLOBAL_DB.prepare("SELECT id, starts_at, ends_at, price_amount, currency FROM venue_slots WHERE venue_id = ? AND status = 'available' AND starts_at >= ? AND starts_at < ? AND NOT EXISTS (SELECT 1 FROM venue_bookings b WHERE b.venue_id = venue_slots.venue_id AND b.starts_at < venue_slots.ends_at AND b.ends_at > venue_slots.starts_at AND b.status IN ('pending','approved')) ORDER BY starts_at ASC LIMIT 250").bind(venueId,from+'T00:00:00',new Date(end+86400000).toISOString().slice(0,10)+'T00:00:00').all();
   return json({venue,slots:result.results||[]});
  }catch{return json({error:'venue_slots_temporarily_unavailable'},503)}
 }
