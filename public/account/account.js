@@ -410,7 +410,10 @@
      identity=me;
      login.hidden=true;panel.hidden=false;
      showInfo('Starry ID 身分已驗證，可使用 H-Global 會員功能。');
-     renderTabs();await render('profile');
+     renderTabs();
+     const requested=new URL(location.href).searchParams.get('tab');
+     const allowed=Array.from(tabs.querySelectorAll('button'),b=>b.dataset.tab);
+     await render(allowed.includes(requested)?requested:'profile');
    }catch(err){
      login.hidden=false;panel.hidden=true;
      showInfo('目前尚未登入，或 Starry ID 中央服務尚未完成授權。');
