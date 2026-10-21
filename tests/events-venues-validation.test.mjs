@@ -37,7 +37,7 @@ for (const name of ['events', 'venues']) {
     });
     assert.equal(response.status, 200);
     assert.deepEqual(database.state.args, [20, 0]);
-    assert.match(database.state.sql, /status = 'published'/);
+    assert.match(database.state.sql, name === 'events' ? /status = 'published'/ : /status = 'active'/);
     assert.deepEqual((await response.json()).pagination, { limit: 20, offset: 0, count: 0 });
   });
   test(name + ': database errors are not cached or leaked', async () => {
