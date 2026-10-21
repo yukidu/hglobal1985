@@ -11,8 +11,20 @@ async function get(path) {
   try { return await fetch(origin + path, { signal: controller.signal, redirect: 'error' }); }
   finally { clearTimeout(timeout); }
 }
-const page = await get('/');
-if (!page.ok) throw Error('Preview homepage HTTP ' + page.status);
+// Cloudflare Pages may take several seconds after Wrangler reports completion
+// to serve the new immutable deployment hostname. Retry only transient responses;
+// a persistently missing homepage still fails deployment.
+async function getHomepageReady() {
+  let last;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    last = await get('/');
+    if (last.ok) return last;
+    if (![404, 429, 502, 503, 504].includes(last.status)) break;
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+  throw Error('Preview homepage unavailable after bounded readiness retries: HTTP ' + last?.status);
+}
+const page = await getHomepageReady();
 const html = await page.text();
 if (!html.includes('noindex,nofollow')) throw Error('Preview noindex requirement missing');
 if (!html.includes('架構預覽版')) throw Error('Latest preview commit not visible');
