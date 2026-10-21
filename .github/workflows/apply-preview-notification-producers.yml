@@ -1,0 +1,31 @@
+name: Apply isolated H-Global in-app notification producers
+on:
+  push:
+    branches: [feat/test-environment-foundation]
+    paths:
+      - .github/workflows/apply-preview-notification-producers.yml
+      - scripts/apply-preview-notification-producers.mjs
+      - migrations/0006_inapp_notifications.sql
+permissions:
+  contents: read
+concurrency:
+  group: hglobal-preview-d1-notification-producers
+  cancel-in-progress: false
+jobs:
+  preview-d1:
+    runs-on: ubuntu-latest
+    environment: hglobal-preview
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - name: Verify triggers against SQLite and user cancellation boundaries
+        run: node --test tests/member-cancellations-notices.test.mjs
+      - name: Install pinned Wrangler
+        run: npm install --no-save --no-package-lock wrangler@3.90.0
+      - name: Apply H-Global Preview-only in-app notification producers
+        run: node scripts/apply-preview-notification-producers.mjs
