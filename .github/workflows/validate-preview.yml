@@ -39,3 +39,6 @@ jobs:
           Path("/tmp/hglobal-inline.js").write_text("\n".join(p.parts),encoding="utf-8")
           PY
           node --check /tmp/hglobal-inline.js
+
+      - name: Run preview API contract tests
+        run: node --test tests/*.test.mjs
