@@ -1,0 +1,59 @@
+name: Publish H-Global isolated Preview
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/hglobal-preview-bootstrap.yml
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: read
+concurrency:
+  group: hglobal-preview-publish
+  cancel-in-progress: true
+jobs:
+  preview:
+    # Only the first-party H-Global foundation PR is allowed to use the Preview credentials.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'feat/test-environment-foundation')
+    runs-on: ubuntu-latest
+    environment: hglobal-preview
+    steps:
+      - name: Check out Preview branch (never main/production)
+        uses: actions/checkout@v4
+        with:
+          ref: feat/test-environment-foundation
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate Preview source
+        run: |
+          test -s public/index.html
+          test -s public/theme.css
+          grep -q 'noindex,nofollow' public/index.html
+          node --test tests/*.test.mjs
+      - name: Block deployment without Cloudflare credentials
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF_TOKEN" ] || [ -z "$CF_ACCOUNT" ]; then
+            echo '::error::Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID. Set repository or hglobal-preview environment secrets.'
+            exit 1
+          fi
+      - name: Deploy isolated Cloudflare Pages Preview
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy public --project-name=hglobal-preview --branch=feat/test-environment-foundation
+      - name: Verify HTTP, D1, and API boundaries
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: node scripts/verify-preview.mjs

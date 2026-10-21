@@ -1,0 +1,27 @@
+name: Validate H-Global repository baseline
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check safe baseline or preview branch
+        run: |
+          test -s README.md
+          if [ -f public/index.html ]; then
+            test -s public/theme.css
+            grep -q 'noindex,nofollow' public/index.html
+            node --test tests/*.test.mjs
+          else
+            test -s .github/workflows/hglobal-preview-bootstrap.yml
+            grep -q 'hglobal-preview' .github/workflows/hglobal-preview-bootstrap.yml
+            grep -q 'feat/test-environment-foundation' .github/workflows/hglobal-preview-bootstrap.yml
+          fi
