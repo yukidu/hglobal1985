@@ -30,8 +30,8 @@ db.execute("INSERT INTO venue_bookings(id,venue_id,slot_id,member_id,starts_at,e
 assert db.execute("SELECT COUNT(*) FROM notifications WHERE member_id='m1'").fetchone()[0]==2
 assert db.execute(x['cancel_event'],('e1','m2')).fetchone() is None
 assert db.execute(x['cancel_venue'],('b1','m2')).fetchone() is None
-assert db.execute(x['cancel_event'],('e1','m1'))['status']=='cancelled'
-assert db.execute(x['cancel_venue'],('b1','m1'))['status']=='cancelled'
+assert db.execute(x['cancel_event'],('e1','m1')).fetchone()['status']=='cancelled'
+assert db.execute(x['cancel_venue'],('b1','m1')).fetchone()['status']=='cancelled'
 assert db.execute("SELECT COUNT(*) FROM notifications WHERE member_id='m1'").fetchone()[0]==4
 assert db.execute("SELECT COUNT(*) FROM notifications WHERE member_id='m2'").fetchone()[0]==0
 assert db.execute(x['cancel_event'],('e1','m1')).fetchone() is None
