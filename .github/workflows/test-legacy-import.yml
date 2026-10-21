@@ -1,0 +1,25 @@
+name: Validate H-Global legacy draft importer
+on:
+  push:
+    branches: [feat/hglobal-content-migration]
+  pull_request:
+    branches: [feat/test-environment-foundation]
+permissions:
+  contents: read
+jobs:
+  legacy-import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install offline import parser
+        run: python -m pip install 'beautifulsoup4>=4.12,<5'
+      - name: Run synthetic security and idempotency tests
+        run: python -m unittest -v tests/test_legacy_import.py
+      - name: Enforce no private HTML or staging files in repository
+        run: |
+          ! git ls-files | grep -E '(^|/)(private-staging[^/]*\.(json|sqlite)|HGlobal_舊網站實際內容_安全預覽版[^/]*)$'

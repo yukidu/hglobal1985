@@ -1,0 +1,12 @@
+.env
+.env.*
+.dev.vars
+*.sqlite
+*.sqlite3
+private-staging*.json
+private-staging*.db
+HGlobal_舊網站實際內容_安全預覽版*.html
+*_private_export.json
+__pycache__/
+*.pyc
+node_modules/
