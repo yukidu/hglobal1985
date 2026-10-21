@@ -71,6 +71,10 @@ const sections = [
 ];
 const pages=sections.flatMap(s=>s.subitems.map(x=>({major:s.major,sub:x.sub,title:x.title||x.sub,text:x.text||"此頁為架構示意；正式內容與資料欄位依 V10 交接規格分批建置。"})));
 let current=0,toolbarExpanded=true,subscribed=new Set();
+// Preview-only deep links. Production public URLs will use /{public_id}/{slug} from CMS.
+function previewUrl(i){const u=new URL(location.href);u.searchParams.set('page',String(i));return u.pathname+u.search+u.hash}
+function restorePreviewPage(){const raw=new URL(location.href).searchParams.get('page');if(raw!==null&&/^\d+$/.test(raw)){const i=Number(raw);if(Number.isSafeInteger(i)&&i>=0&&i<pages.length)current=i}}
+restorePreviewPage();
 const $=id=>document.getElementById(id);
 function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2300)}
 function render(){
@@ -88,7 +92,8 @@ function render(){
  $('subscribeIcon').textContent=subscribed.has(p.major+'|'+p.sub)?'✓':'♧';$('subscribeLabel').textContent=subscribed.has(p.major+'|'+p.sub)?'已訂閱':'訂閱';
 }
 function closeDrawer(){$('sidebar').classList.remove('open');$('scrim').classList.remove('show');$('menuToggle').setAttribute('aria-expanded','false')}
-function goTo(i){if(i<0||i>=pages.length){toast(i<0?'已是第一個頁面':'已是最後一個頁面');return}current=i;render();window.scrollTo({top:0,behavior:'smooth'})}
+function goTo(i,{history=true}={}){if(i<0||i>=pages.length){toast(i<0?'已是第一個頁面':'已是最後一個頁面');return}current=i;if(history)window.history.pushState({previewPage:i},'',previewUrl(i));render();window.scrollTo({top:0,behavior:'smooth'})}
+window.addEventListener('popstate',()=>{const raw=new URL(location.href).searchParams.get('page');const i=raw!==null&&/^\d+$/.test(raw)?Number(raw):0;goTo(Number.isSafeInteger(i)&&i>=0&&i<pages.length?i:0,{history:false})});
 function selectMajor(name){const idx=pages.findIndex(p=>p.major===name);if(idx>=0){goTo(idx);closeDrawer()}}
 $('primaryNav').addEventListener('click',e=>{const b=e.target.closest('[data-major]');if(b)selectMajor(b.dataset.major)});
 $('subnav').addEventListener('click',e=>{const b=e.target.closest('[data-sub]');if(b){const idx=pages.findIndex(p=>p.major===pages[current].major&&p.sub===b.dataset.sub);if(idx>=0)goTo(idx)}});
