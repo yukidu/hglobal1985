@@ -10,9 +10,9 @@
 <header class="topbar">
   <button class="icon-btn menu-toggle" id="menuToggle" aria-label="開啟主選單" aria-expanded="false">☰</button>
   <a class="brand" href="/" aria-label="返回首頁"><span class="brand-mark">H</span><span><strong>寰宇全球</strong><small>H-GLOBAL</small></span></a>
-  <div class="member-shortcuts"><button class="icon-btn" title="會員資料" aria-label="會員資料">♙</button><button class="icon-btn" title="獎銜" aria-label="獎銜">♢</button><button class="icon-btn" title="我的訂閱" aria-label="我的訂閱" id="subscriptionShortcut">♧</button></div>
+  <div class="member-shortcuts"><button class="icon-btn" title="會員資料" aria-label="會員資料">♙</button><button class="icon-btn" title="獎銜" aria-label="獎銜">♢</button><button class="icon-btn" title="我的訂閱" aria-label="我的訂閱" id="subscriptionShortcut" disabled title="訂閱功能尚未開放">♧</button></div>
 </header>
-<div class="test-banner"><span class="status-dot"></span>測試環境 · 架構驗收中 · 尚未連接正式資料</div>
+<div class="test-banner"><span class="status-dot"></span>架構預覽版 · 選單與分享可測試 · 會員、報名、訂閱及後台尚未開放</div>
 <div class="layout">
   <aside class="sidebar" id="sidebar" aria-label="主選單">
     <div class="sidebar-head"><strong>網站主選單</strong><button id="closeMenu" class="icon-btn" aria-label="關閉主選單">×</button></div>
@@ -44,7 +44,7 @@
       <h2 id="contentTitle">首頁</h2>
       <p id="contentText">首頁是一個獨立頁面，可由授權管理員自訂內容；不需要在第二層選單額外放置「首頁」按鈕。</p>
       <div class="notice"><strong>目前階段</strong><p>先驗收導覽、階層與品牌視覺。登入、會員權限、資料儲存、活動報名及場地預訂將依開發批次逐步建置。</p></div>
-      <div class="content-actions"><button class="primary-btn" id="editPage">編輯本頁內容</button><button class="secondary-btn" id="viewSubscriptions">我的訂閱清單</button></div>
+      <div class="content-actions"><button class="primary-btn" id="editPage" disabled title="CMS 尚未開發完成">編輯本頁內容（未開放）</button><button class="secondary-btn" id="viewSubscriptions" disabled title="會員訂閱系統尚未完成">我的訂閱清單（未開放）</button></div>
     </section>
   </main>
 </div>
@@ -53,7 +53,7 @@
   <button id="prevPage" aria-label="上一頁"><span>‹</span><small>上一頁</small></button>
   <button id="sharePage" aria-label="分享"><span>↗</span><small>分享</small></button>
   <button id="topPage" aria-label="回頂端"><span>↑</span><small>回頂端</small></button>
-  <button id="subscribePage" aria-label="訂閱此頁"><span id="subscribeIcon">♧</span><small id="subscribeLabel">訂閱</small></button>
+  <button id="subscribePage" aria-label="訂閱尚未開放" title="需完成會員登入與資料儲存後開放" disabled><span id="subscribeIcon">♧</span><small id="subscribeLabel">未開放</small></button>
   <button id="nextPage" aria-label="下一頁"><span>›</span><small>下一頁</small></button>
   <button class="collapse-toolbar" id="collapseToolbar" aria-label="縮小工具列">⌄</button>
 </div>
@@ -87,9 +87,9 @@ function render(){
  $('subnav').innerHTML=section.subitems.map(x=>'<button class="subnav-btn '+(x.sub===p.sub?'active':'')+'" data-sub="'+x.sub.replaceAll('"','&quot;')+'">'+x.sub+'</button>').join('');
 
  $('prevPage').disabled=current===0;$('nextPage').disabled=current===pages.length-1;
- const blocked=['我的活動','我的通知','我的訂閱','會員控制台'].includes(p.sub)||p.major==='首頁';
+ const blocked=true; // Subscription requires authenticated backend; never simulate success.
  $('subscribePage').disabled=blocked;$('subscribePage').classList.toggle('is-subscribed',subscribed.has(p.major+'|'+p.sub));
- $('subscribeIcon').textContent=subscribed.has(p.major+'|'+p.sub)?'✓':'♧';$('subscribeLabel').textContent=subscribed.has(p.major+'|'+p.sub)?'已訂閱':'訂閱';
+ $('subscribeIcon').textContent=subscribed.has(p.major+'|'+p.sub)?'✓':'♧';$('subscribeLabel').textContent=subscribed.has(p.major+'|'+p.sub)?'已訂閱':'未開放';
 }
 function closeDrawer(){$('sidebar').classList.remove('open');$('scrim').classList.remove('show');$('menuToggle').setAttribute('aria-expanded','false')}
 function goTo(i,{history=true}={}){if(i<0||i>=pages.length){toast(i<0?'已是第一個頁面':'已是最後一個頁面');return}current=i;if(history)window.history.pushState({previewPage:i},'',previewUrl(i));render();window.scrollTo({top:0,behavior:'smooth'})}
@@ -104,13 +104,13 @@ $('closeMenu').onclick=closeDrawer;$('scrim').onclick=closeDrawer;
 $('prevPage').onclick=()=>goTo(current-1);$('nextPage').onclick=()=>goTo(current+1);
 $('topPage').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 $('sharePage').onclick=async()=>{const data={title:$('contentTitle').textContent,text:'寰宇全球 H-Global｜'+$('contentTitle').textContent,url:location.href};try{if(navigator.share)await navigator.share(data);else if(navigator.clipboard){await navigator.clipboard.writeText(data.url);toast('此裝置不支援原生分享，已複製網址')}}catch(e){if(e.name!=='AbortError')toast('分享功能目前無法使用')}};
-$('subscribePage').onclick=()=>{const p=pages[current],key=p.major+'|'+p.sub;if(['我的活動','我的通知','我的訂閱','會員控制台'].includes(p.sub)||p.major==='首頁')return;subscribed.has(key)?subscribed.delete(key):subscribed.add(key);render();toast(subscribed.has(key)?'已加入本機示意訂閱':'已取消本機示意訂閱')};
+$('subscribePage').onclick=()=>toast('訂閱尚未開放，未儲存任何訂閱資料');
 $('subscriptionShortcut').onclick=()=>toast('訂閱清單 UI 將於會員功能批次接入');
 $('viewSubscriptions').onclick=()=>toast('訂閱清單目前為前端示意');
 $('editPage').onclick=()=>toast('本批次先驗收架構；CMS 將於後續 PR 建置');
 $('collapseToolbar').onclick=()=>{toolbarExpanded=false;$('floatingToolbar').hidden=true;$('expandToolbar').hidden=false};
 $('expandToolbar').onclick=()=>{toolbarExpanded=true;$('floatingToolbar').hidden=false;$('expandToolbar').hidden=true};
-document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>toast(b.dataset.view==='admin'?'管理員功能將於權限批次實作':'會員控制台將於會員批次實作'));
+document.querySelectorAll('[data-view]').forEach(b=>{b.disabled=true;b.title='尚未完成會員認證與權限驗證';b.setAttribute('aria-label',b.textContent.trim()+'（未開放）')});
 render();
 </script>
 </body></html>
