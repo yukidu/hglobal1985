@@ -113,7 +113,7 @@
    line(box,'中央會員資料仍由 Starry ID 管理；本站不保管 Google 密碼。');
    box.append(button('安全登出',async()=>{
      const res=await fetch('/auth/logout',{method:'POST',credentials:'same-origin',
-       cache:'no-store',redirect:'manual'});
+       cache:'no-store',redirect:'follow'});
      if(![200,303].includes(res.status))throw Error('logout_failed');
      location.assign('/');
    },'danger'));
