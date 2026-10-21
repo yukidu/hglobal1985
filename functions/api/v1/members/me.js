@@ -1,4 +1,4 @@
-import { currentMember,hasRole,json,errorResponse } from '../../_lib/starry-auth.js';
+import { currentMember,hasRole,json,errorResponse } from '../../../_lib/starry-auth.js';
 
 // Member information belongs to the authenticated Starry ID subject.
 // Client-provided member IDs, role flags and email are never trusted.
