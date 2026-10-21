@@ -27,7 +27,11 @@ function fakeDb({migration=true,required=0,insertError=null}={}) {
            {id:'hglobal-member-1',status:'active',display_name:'會員'}:
            sql.includes('schema_migrations')?(migration?{version:'0004_registration_capacity_guard'}:null):
            sql.includes('event_fields')?{count:required}:null,
-         all:async()=>({results:[]}),
+         all:async()=>({results:sql.includes('FROM event_fields')?
+           Array.from({length:required},(_,i)=>({
+             id:'field-'+i,field_key:'field'+i,label:'必填',field_type:'text',
+             required:1,options_json:'[]'
+           })):[]}),
          run:async()=>{state.writes.push({sql,args});if(insertError)throw Error(insertError);return {success:true}}
        };
      },
@@ -71,8 +75,8 @@ test('required dynamic registration fields prevent accidental incomplete accepta
  try {
    const db=fakeDb({required:2});
    const res=await call(db,{event_id:'e1',session_id:'s1'});
-   assert.equal(res.status,409);
-   assert.equal((await res.json()).error,'registration_form_not_ready');
+   assert.equal(res.status,400);
+   assert.equal((await res.json()).error,'required_event_field');
    assert.equal(db.state.writes.length,0);
  }finally{globalThis.fetch=old}
 });
